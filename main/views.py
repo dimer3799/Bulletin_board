@@ -9,9 +9,11 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.edit import UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordChangeView
+from django.views.generic.base import TemplateView
+from django.views.generic import CreateView
 
 from .models import AdvUser
-from .forms import ChangeUserInfoForm
+from .forms import ChangeUserInfoForm, RegisterUserForm
 
 
 # Create your views here.
@@ -34,6 +36,7 @@ def profile(request):
 	return render(request, 'main/profile.html')
 
 class BBLogoutView(LoginRequiredMixin, LogoutView):
+	# Выход из личного кабинета
 	template_name = 'main/logout.html'
 
 class ChangeUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
@@ -58,3 +61,14 @@ class BBPaswwordChangeViews(SuccessMessageMixin, LoginRequiredMixin, PasswordCha
 	template_name = 'main/password_change.html'
 	success_url = reverse_lazy('main:profile')
 	success_message = 'Пароль пользователя изменен'
+
+class RegisterUserView(CreateView):
+	# Регистрация пользователей
+	maodel = AdvUser
+	template_name = 'main/register_user.html'
+	form_class = RegisterUserForm
+	success_url = reverse_lazy('main:register_done')
+
+class RegisterDoneView(TemplateView):
+	# Успешная регистрация
+	template_name = 'main/register_done.html'
