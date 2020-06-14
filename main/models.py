@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-# Create your models here.
+from django.dispatch import Signal
+
+from .utilities import send_activation_notification
+
+user_registrated = Signal(providing_args=['instance'])
 
 class AdvUser(AbstractUser):
     is_activated = models.BooleanField(default = True, db_index = True, verbose_name = 'Прошел активацию?')
@@ -8,3 +12,9 @@ class AdvUser(AbstractUser):
 
     class Meta(AbstractUser.Meta):
         pass
+
+
+def user_registrated_dispathcer(sender, **kwargs):
+    send_activation_notification(kwargs['instance'])
+
+user_registrated.connect(user_registrated_dispathcer)
