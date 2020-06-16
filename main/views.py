@@ -12,6 +12,10 @@ from django.contrib.auth.views import PasswordChangeView
 from django.views.generic.base import TemplateView
 from django.views.generic import CreateView
 from django.core.signing import BadSignature
+from django.views.generic.edit import DeleteView
+from django.contrib.auth import logout
+from django.contrib import messages
+
 
 from .models import AdvUser
 from .forms import ChangeUserInfoForm, RegisterUserForm
@@ -89,3 +93,24 @@ def user_activate(request, sign):
 		user.is_activated = True
 		user.save()
 	return render(request, template)
+
+class DeleteUserView(LoginRequiredMixin, DeleteView):
+	# Удаление пользователя
+	model = AdvUser
+	template_name = 'main/delete_user.html'
+	success_url = reverse_lazy('main:index')
+
+	def dispatch(self, request, *args, **kwargs):
+		# Сохранение ключа текущего пользователя
+		self.user_id = request.user.pk
+		return super().dispatch(request, *args, **kwargs)
+
+	def post(self, request, *args, **kwargs):
+		logout(request)
+		messages.add_message(request, messages.SUCCESS, 'Пользователь удален')
+		return super().post(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		if not queryset:
+			queryset = self.get_queryset()
+		return get_object_or_404(queryset, pk=self.user_id)
